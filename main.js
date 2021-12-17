@@ -1,13 +1,21 @@
 const { exec } = require("child_process");
-const lockfile = require("lockfile");
+const lockfile = require("proper-lockfile");
 const ms = require("ms");
-const { promisify } = require('util');
-const lockAsync = promisify(lockfile.lock);
-const unlockAsync = promisify(lockfile.unlock);
+const winston = require("winston");
 
 const command = process.env.COMMAND || "false";
 const interval = process.env.INTERVAL || "90s";
-const lockPath = process.env.LOCKPATH || "/tmp/balena/updates.lock";
+const lockPath = process.env.LOCKPATH || "/tmp/balena/updates";
+const logLevel = process.env.LOG_LEVEL || "info";
+
+const logger = winston.createLogger({
+  level: logLevel,
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    }),
+  ],
+});
 
 class Executor {
   execute(command) {
@@ -24,17 +32,33 @@ class Executor {
 }
 
 async function lock() {
-  console.debug("creating lockfile...");
-  await lockAsync(lockPath)
-    .catch((err) => console.error(err))
-    .then(() => console.log("lockfile created..."));
+  const options = { realpath: false };
+  await lockfile
+    .check(lockPath, options)
+    .catch((err) => logger.error(err))
+    .then(async (isLocked) => {
+      if (!isLocked) {
+        await lockfile
+          .lock(lockPath, options)
+          .catch((err) => logger.error(err))
+          .then(() => logger.info("updates locked..."));
+      }
+    });
 }
 
 async function unlock() {
-  console.debug("removing lockfile...");
-  await unlockAsync(lockPath)
-    .catch((err) => console.error(err))
-    .then(() => console.log("lockfile removed..."));
+  const options = { realpath: false };
+  await lockfile
+    .check(lockPath, options)
+    .catch((err) => logger.error(err))
+    .then(async (isLocked) => {
+      if (isLocked) {
+        await lockfile
+          .unlock(lockPath, options)
+          .catch((err) => logger.error(err))
+          .then(() => logger.info("updates unlocked..."));
+      }
+    });
 }
 
 function sleep(interval) {
@@ -46,15 +70,15 @@ async function main() {
     await new Executor()
       .execute(command)
       .then(async (result) => {
-        console.debug(`stdout => ${result}`);
+        logger.debug(`stdout => ${result}`);
         await lock();
       })
       .catch(async (err) => {
-        console.error(`stderr => ${err}`);
+        logger.debug(`stderr => ${err}`);
         await unlock();
       })
       .finally(() => {
-        console.log(`next check in ${interval}...`);
+        logger.debug(`next check in ${interval}...`);
         return sleep(interval);
       });
   }
