@@ -1,0 +1,21 @@
+{
+  "name": "lockr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
+  },
+  "engines": {
+    "node": ">=12.18"
+  },
+  "keywords": [],
+  "author": "Kyle Harding",
+  "license": "ISC",
+  "dependencies": {
+    "lockfile": "^1.0.4",
+    "ms": "^2.1.3"
+  }
+}

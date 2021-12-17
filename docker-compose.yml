@@ -1,0 +1,8 @@
+version: "2"
+
+services:
+  lockr:
+    build: .
+    environment:
+      COMMAND: "echo $HOSTNAME ; false"
+      INTERVAL: "90s"
