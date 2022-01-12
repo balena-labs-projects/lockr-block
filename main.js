@@ -4,8 +4,12 @@ const ms = require("ms");
 
 const command = process.env.COMMAND || "false";
 const interval = process.env.INTERVAL || "90s";
-const lockPath = process.env.LOCKPATH || "/tmp/balena/updates";
 const debug = process.env.DEBUG || false;
+
+// remove the .lock extension as it will be added by the lockfile module
+const lockPath =
+  process.env.BALENA_APP_LOCK_PATH.replace(".lock", "") ||
+  "/tmp/balena/updates";
 
 class Executor {
   execute(command) {
