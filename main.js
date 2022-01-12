@@ -6,10 +6,9 @@ const command = process.env.COMMAND || "false";
 const interval = process.env.INTERVAL || "90s";
 const debug = process.env.DEBUG || false;
 
-// remove the .lock extension as it will be added by the lockfile module
-const lockPath =
-  process.env.BALENA_APP_LOCK_PATH.replace(".lock", "") ||
-  "/tmp/balena/updates";
+const lockFilePath =
+  process.env.BALENA_APP_LOCK_PATH || "/tmp/balena/updates.lock";
+const lockPath = lockFilePath.substring(0, lockFilePath.lastIndexOf("/"));
 
 class Executor {
   execute(command) {
@@ -26,7 +25,7 @@ class Executor {
 }
 
 async function lock() {
-  const options = { realpath: false };
+  const options = { lockfilePath: lockFilePath, realpath: false };
   await lockfile.check(lockPath, options).then(async (isLocked) => {
     if (!isLocked) {
       await lockfile
@@ -38,7 +37,7 @@ async function lock() {
 }
 
 async function unlock() {
-  const options = { realpath: false };
+  const options = { lockfilePath: lockFilePath, realpath: false };
   await lockfile.check(lockPath, options).then(async (isLocked) => {
     if (isLocked) {
       await lockfile
