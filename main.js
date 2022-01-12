@@ -25,8 +25,12 @@ class Executor {
   }
 }
 
+const handleCompromised = (err) => {
+  console.warn(`lock compromised: ${err}`);
+};
+
 async function lock() {
-  const options = { realpath: false };
+  const options = { realpath: false, onCompromised: handleCompromised };
   await lockfile.check(lockPath, options).then(async (isLocked) => {
     if (!isLocked) {
       await lockfile
@@ -38,7 +42,7 @@ async function lock() {
 }
 
 async function unlock() {
-  const options = { realpath: false };
+  const options = { realpath: false, onCompromised: handleCompromised };
   await lockfile.check(lockPath, options).then(async (isLocked) => {
     if (isLocked) {
       await lockfile
