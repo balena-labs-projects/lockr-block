@@ -1,28 +1,30 @@
-import { exec } from 'child_process';
 import * as lockfile from 'proper-lockfile';
 import { schedule } from 'node-cron';
+import fetch from 'node-fetch';
 
-const COMMAND = process.env.COMMAND || 'false';
+const ENDPOINT: string = process.env.ENDPOINT || '';
+const CREDENTIALS = process.env.CREDENTIALS;
+const LOCK_REGEX = process.env.LOCK_REGEX;
 const SCHEDULE = process.env.SCHEDULE || '*/5 * * * *'; // every 5min
-const DEBUG = process.env.DEBUG || false;
 
 // remove the .lock extension as it will be added by the lockfile module
 const LOCK_PATH =
 	process.env.BALENA_APP_LOCK_PATH?.replace('.lock', '') ||
 	'/tmp/balena/updates';
 
-class Executor {
-	execute(command: string) {
-		return new Promise((resolve, reject) => {
-			let logs = '';
-			const execution = exec(command);
-			execution.stdout?.on('data', (data) => (logs += data));
-			execution.stderr?.on('data', (data) => (logs += data));
-			execution.on('exit', (code) =>
-				code === 0 ? resolve(logs) : reject(logs),
-			);
-		});
+function isUrl(input: any) {
+	let url;
+	try {
+		url = new URL(input);
+	} catch (_) {
+		return false;
 	}
+
+	return url.protocol === 'http:' || url.protocol === 'https:';
+}
+
+if (!isUrl(ENDPOINT)) {
+	throw new Error('ENDPOINT must be a valid web URL!');
 }
 
 const handleCompromised = (err: Error) => {
@@ -53,23 +55,55 @@ async function unlock() {
 	});
 }
 
-async function main() {
-	while (true) {
-		await new Executor()
-			.execute(COMMAND)
-			.then(async (result) => {
-				if (DEBUG) {
-					console.log(`stdout => ${result}`);
-				}
-				await lock();
-			})
-			.catch(async (err) => {
-				if (DEBUG) {
-					console.log(`stderr => ${err}`);
-				}
-				await unlock();
-			});
+class HTTPResponseError extends Error {
+	public readonly response: Response;
+
+	constructor(response: Response) {
+		super(`HTTP Error Response: ${response.status} ${response.statusText}`);
+		this.response = response;
 	}
+}
+
+const checkStatus = (response: any) => {
+	if (response.ok) {
+		// response.status >= 200 && response.status < 300
+		return response;
+	} else {
+		return new HTTPResponseError(response);
+	}
+};
+
+const doFetch = async (endpoint: string): Promise<any> => {
+	return await fetch(endpoint, {
+		method: 'GET',
+		headers: {
+			...(CREDENTIALS != null && {
+				Authorization:
+					'Basic ' + Buffer.from(CREDENTIALS, 'utf-8').toString('base64'),
+			}),
+		},
+	}).then((response) => {
+		return checkStatus(response).text();
+	});
+};
+
+async function main() {
+	await doFetch(ENDPOINT)
+		.then(async (response) => {
+			console.log(response);
+
+			if (LOCK_REGEX != null) {
+				if (new RegExp(LOCK_REGEX).test(response)) {
+					return await lock();
+				} else {
+					return await unlock();
+				}
+			}
+		})
+		.catch(async (err) => {
+			console.error(err.message);
+			// leave locks alone
+		});
 }
 
 console.log(`Scheduling lock conditions check on cron '${SCHEDULE}'`);
