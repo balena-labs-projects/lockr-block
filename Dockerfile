@@ -1,16 +1,27 @@
-FROM node:12.22.7-alpine3.14
+FROM node:16-alpine AS base
 
-WORKDIR /usr/src/app
+# hadolint ignore=DL3018
+RUN apk add --no-cache dumb-init
 
-COPY package*.json ./
+WORKDIR /app
 
-# install dependencies
-RUN JOBS=MAX npm install --production --unsafe-perm && \
-    npm cache verify && \
-    rm -rf /tmp/*
+FROM base AS dev
 
-COPY *.js *.sh ./
+COPY *.json ./
 
-RUN chmod +x *.sh
+RUN npm ci
 
-CMD [ "./eval.sh" ]
+FROM dev as build
+
+COPY lib/ lib/
+
+RUN npm run build
+
+FROM base AS prod
+
+COPY --from=build /app/package.json /app/package-lock.json ./
+COPY --from=build /app/build /app/build
+
+RUN npm ci --omit=dev
+
+CMD [ "dumb-init", "node", "/app/build/index.js" ]
