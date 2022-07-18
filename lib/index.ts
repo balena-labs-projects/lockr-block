@@ -1,8 +1,9 @@
 import { exec } from 'child_process';
 import * as lockfile from 'proper-lockfile';
+import { schedule } from 'node-cron';
 
 const COMMAND = process.env.COMMAND || 'false';
-const INTERVAL = process.env.INTERVAL || '90s';
+const SCHEDULE = process.env.SCHEDULE || '*/5 * * * *'; // every 5min
 const DEBUG = process.env.DEBUG || false;
 
 // remove the .lock extension as it will be added by the lockfile module
@@ -52,10 +53,6 @@ async function unlock() {
 	});
 }
 
-function sleep(interval: number) {
-	return new Promise((resolve) => setTimeout(resolve, interval));
-}
-
 async function main() {
 	while (true) {
 		await new Executor()
@@ -71,11 +68,12 @@ async function main() {
 					console.log(`stderr => ${err}`);
 				}
 				await unlock();
-			})
-			.finally(() => {
-				return sleep(Number(INTERVAL));
 			});
 	}
 }
 
-main();
+console.log(`Scheduling lock conditions check on cron '${SCHEDULE}'`);
+schedule(SCHEDULE, async () => {
+	console.log('Checking lock conditions...');
+	return main();
+});
