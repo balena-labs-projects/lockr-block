@@ -1,4 +1,4 @@
-import * as lockfile from 'proper-lockfile';
+import * as lockfile from 'lockfile';
 import fetch from 'node-fetch';
 import ms, { StringValue } from 'ms';
 
@@ -6,11 +6,8 @@ const ENDPOINT: string = process.env.ENDPOINT || '';
 const CREDENTIALS = process.env.CREDENTIALS;
 const LOCK_REGEXP = process.env.LOCK_REGEXP;
 const INTERVAL = process.env.INTERVAL || '60s'; // every 60s
-
-// remove the .lock extension as it will be added by the lockfile module
 const LOCK_PATH =
-	process.env.BALENA_APP_LOCK_PATH?.replace('.lock', '') ||
-	'/tmp/balena/updates';
+	process.env.BALENA_APP_LOCK_PATH || '/tmp/balena/updates.lock';
 
 function isUrl(input: any) {
 	let url;
@@ -37,34 +34,40 @@ try {
 	throw new Error('LOCK_REGEX must be a valid regular expression!');
 }
 
-const handleCompromised = (err: Error) => {
-	console.log(`lock compromised: ${err}`);
-};
-
 async function lock() {
-	const options = { realpath: false, onCompromised: handleCompromised };
-	return lockfile.check(LOCK_PATH, options).then(async (isLocked: boolean) => {
+	return lockfile.check(LOCK_PATH, {}, async (err, isLocked) => {
+		if (err) {
+			return console.error(err.message);
+		}
+
 		if (!isLocked) {
 			console.log('applying lock...');
-			return lockfile
-				.lock(LOCK_PATH, options)
-				.then(() => console.log('lock applied!'))
-				.catch((err: Error) => console.error(err.message));
+			return lockfile.lock(LOCK_PATH, {}, async (e) => {
+				if (e) {
+					return console.error(e.message);
+				}
+				console.log('lock applied!');
+			});
 		} else {
-			console.log('already locked!');
+			return console.log('already locked!');
 		}
 	});
 }
 
 async function unlock() {
-	const options = { realpath: false, onCompromised: handleCompromised };
-	return lockfile.check(LOCK_PATH, options).then(async (isLocked: boolean) => {
+	return lockfile.check(LOCK_PATH, {}, async (err, isLocked) => {
+		if (err) {
+			return console.error(err.message);
+		}
+
 		if (isLocked) {
-			console.log('removing lock...');
-			return lockfile
-				.unlock(LOCK_PATH, options)
-				.then(() => console.log('lock removed!'))
-				.catch((err: Error) => console.error(err.message));
+			console.log('applying lock...');
+			return lockfile.unlock(LOCK_PATH, async (e) => {
+				if (e) {
+					return console.error(e.message);
+				}
+				console.log('lock removed!');
+			});
 		} else {
 			console.log('already unlocked!');
 		}
