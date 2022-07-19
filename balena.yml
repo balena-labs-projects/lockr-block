@@ -1,8 +1,9 @@
 name: lockr
 type: sw.block
-version: 0.0.1
+version: 1.0.0
 description: >-
-  Apply application update locks by matching a URL response to a regular expression.
+  Apply application update locks by matching a URL response to a regular
+  expression.
 assets:
   repository:
     type: blob.asset
