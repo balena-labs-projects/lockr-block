@@ -1,17 +1,25 @@
 # lockr-block
 
-Create or remove application update locks with the return code of any command.
+Apply application update locks by matching a URL response to a regular expression.
 
 <https://www.balena.io/docs/learn/deploy/release-strategy/update-locking/>
 
-## Environment Variables
-
-To run this project, you will need the following environment variables in your container:
-
-- `COMMAND`: Any shell command that will be evaluated and if the return code is 0 (true) locks will be created.
-- `INTERVAL`: Interval between each evaluation of the lock command. Default is `90s`.
-
 ## Usage/Examples
+
+Here's an example to check if a jenkins server is busy by querying the API:
+
+```yml
+version: "2"
+
+services:
+  lockr:
+    build: .
+    environment:
+      ENDPOINT: "https://jenkins.product-os.io/computer/api/xml?xpath=//busyExecutors"
+      LOCK_REGEXP: "/<busyExecutors>0</busyExecutors>/"
+      CREDENTIALS: "admin:password"
+      INTERVAL: "30s"
+```
 
 Here's an example to check if a jenkins node is busy by querying the API:
 
@@ -22,13 +30,26 @@ services:
   lockr:
     build: .
     environment:
-      COMMAND: "curl -X GET --silent -u $JENKINS_USER http://$JENKINS_HOST/computer/$JENKINS_NODE/api/json | jq -r '.idle' | grep -q '^false$'"
-      JENKINS_HOST: "jenkins.example.com"
-      JENKINS_USER: "admin:password"
-      JENKINS_NODE: "foobar"
+      ENDPOINT: "https://jenkins.product-os.io/computer/foobar/api/xml?xpath=//idle"
+      LOCK_REGEXP: "/<idle>false</idle>/"
+      CREDENTIALS: "admin:password"
+      INTERVAL: "30s"
 ```
 
-Notice that environment variables are supported in `COMMAND` and will be substituted at container startup.
+## Customization
+
+### Environment Variables
+
+To run this project, you will need the following environment variables in your container:
+
+- `ENDPOINT`: Provide a URL to query with GET, the response will be processed as text.
+- `CREDENTIALS`: If the above endpoint requires basic auth, provide it in the format `user:pass`.
+- `LOCK_REGEXP`: Regular expression in the format `/foobar/` that will apply locks when matched.
+- `INTERVAL`: Interval between each fetch and match execution. Default is `60s`.
+
+## Contributing
+
+Please open an issue or submit a pull request with any features, fixes, or changes.
 
 ## References
 
