@@ -2,7 +2,7 @@
   "name": "lockr",
   "version": "0.0.1",
   "description": "Apply application update locks by matching a URL response to a regular expression",
-  "homepage": "https://github.com/balena-io-playground/lockr-block",
+  "homepage": "https://github.com/balenablocks/lockr-block",
   "keywords": [
     "balena",
     "typescript"
@@ -11,10 +11,10 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/balena-io-playground/lockr-block.git"
+    "url": "git+https://github.com/balenablocks/lockr-block.git"
   },
   "bugs": {
-    "url": "https://github.com/balena-io-playground/lockr-block/issues"
+    "url": "https://github.com/balenablocks/lockr-block/issues"
   },
   "main": "build/index.js",
   "types": "build/index.d.ts",
