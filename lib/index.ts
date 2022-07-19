@@ -1,11 +1,11 @@
 import * as lockfile from 'proper-lockfile';
-import { schedule } from 'node-cron';
 import fetch from 'node-fetch';
+import ms, { StringValue } from 'ms';
 
 const ENDPOINT: string = process.env.ENDPOINT || '';
 const CREDENTIALS = process.env.CREDENTIALS;
-const LOCK_REGEX = process.env.LOCK_REGEX;
-const SCHEDULE = process.env.SCHEDULE || '*/5 * * * *'; // every 5min
+const LOCK_REGEXP = process.env.LOCK_REGEXP;
+const INTERVAL = process.env.INTERVAL || '60s'; // every 60s
 
 // remove the .lock extension as it will be added by the lockfile module
 const LOCK_PATH =
@@ -27,30 +27,46 @@ if (!isUrl(ENDPOINT)) {
 	throw new Error('ENDPOINT must be a valid web URL!');
 }
 
+let lockRegexp: any;
+try {
+	const match = LOCK_REGEXP?.match(new RegExp('^/(.*?)/([gimy]*)$'));
+	if (match != null) {
+		lockRegexp = new RegExp(match[1], match[2]);
+	}
+} catch {
+	throw new Error('LOCK_REGEX must be a valid regular expression!');
+}
+
 const handleCompromised = (err: Error) => {
-	console.warn(`lock compromised: ${err}`);
+	console.log(`lock compromised: ${err}`);
 };
 
 async function lock() {
 	const options = { realpath: false, onCompromised: handleCompromised };
-	await lockfile.check(LOCK_PATH, options).then(async (isLocked: boolean) => {
+	return lockfile.check(LOCK_PATH, options).then(async (isLocked: boolean) => {
 		if (!isLocked) {
-			await lockfile
+			console.log('applying lock...');
+			return lockfile
 				.lock(LOCK_PATH, options)
-				.catch((err: Error) => console.error(err))
-				.then(() => console.log('updates locked...'));
+				.then(() => console.log('lock applied!'))
+				.catch((err: Error) => console.error(err.message));
+		} else {
+			console.log('already locked!');
 		}
 	});
 }
 
 async function unlock() {
 	const options = { realpath: false, onCompromised: handleCompromised };
-	await lockfile.check(LOCK_PATH, options).then(async (isLocked: boolean) => {
+	return lockfile.check(LOCK_PATH, options).then(async (isLocked: boolean) => {
 		if (isLocked) {
-			await lockfile
+			console.log('removing lock...');
+			return lockfile
 				.unlock(LOCK_PATH, options)
-				.catch((err: Error) => console.error(err))
-				.then(() => console.log('updates unlocked...'));
+				.then(() => console.log('lock removed!'))
+				.catch((err: Error) => console.error(err.message));
+		} else {
+			console.log('already unlocked!');
 		}
 	});
 }
@@ -74,7 +90,9 @@ const checkStatus = (response: any) => {
 };
 
 const doFetch = async (endpoint: string): Promise<any> => {
-	return await fetch(endpoint, {
+	console.log(`GET ${endpoint}`);
+
+	return fetch(endpoint, {
 		method: 'GET',
 		headers: {
 			...(CREDENTIALS != null && {
@@ -87,27 +105,29 @@ const doFetch = async (endpoint: string): Promise<any> => {
 	});
 };
 
-async function main() {
-	await doFetch(ENDPOINT)
+async function doLoop() {
+	return doFetch(ENDPOINT)
 		.then(async (response) => {
-			console.log(response);
+			console.log(`=> ${response}`);
 
-			if (LOCK_REGEX != null) {
-				if (new RegExp(LOCK_REGEX).test(response)) {
-					return await lock();
-				} else {
-					return await unlock();
-				}
+			if (lockRegexp.test(response)) {
+				return lock();
+			} else {
+				return unlock();
 			}
 		})
-		.catch(async (err) => {
-			console.error(err.message);
-			// leave locks alone
+		.catch((err) => {
+			console.error(err.message); // leave locks alone
+		})
+		.finally(() => {
+			setTimeout(doLoop, ms(INTERVAL as StringValue));
 		});
 }
 
-console.log(`Scheduling lock conditions check on cron '${SCHEDULE}'`);
-schedule(SCHEDULE, async () => {
-	console.log('Checking lock conditions...');
-	return main();
-});
+(async () => {
+	try {
+		return doLoop();
+	} catch (err) {
+		console.error(err);
+	}
+})();
