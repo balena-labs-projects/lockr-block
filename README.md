@@ -6,14 +6,32 @@ Apply application update locks by matching a URL response to a regular expressio
 
 ## Usage/Examples
 
+To use this image, add a service in your `docker-compose.yml` file as shown below.
+
+```yml
+services:
+  ...
+  lockr:
+    # where <arch> is one of aarch64, armv7hf or amd64
+    image: bh.cr/balenablocks/lockr-<arch>
+```
+
+To pin to a specific version of this block use:
+
+```yml
+services:
+  ...
+  lockr:
+    # where <version> is the release semver or release commit ID
+    image: bh.cr/balenablocks/lockr-<arch>/<version>
+```
+
 Here's an example to check if a jenkins server is busy by querying the API:
 
 ```yml
-version: "2"
-
 services:
   lockr:
-    build: .
+    image: bh.cr/balenablocks/lockr-amd64
     environment:
       ENDPOINT: "https://jenkins.product-os.io/computer/api/xml?xpath=//busyExecutors"
       LOCK_REGEXP: "/<busyExecutors>0</busyExecutors>/"
@@ -24,11 +42,9 @@ services:
 Here's an example to check if a jenkins node is busy by querying the API:
 
 ```yml
-version: "2"
-
 services:
   lockr:
-    build: .
+    image: bh.cr/balenablocks/lockr-amd64
     environment:
       ENDPOINT: "https://jenkins.product-os.io/computer/foobar/api/xml?xpath=//idle"
       LOCK_REGEXP: "/<idle>false</idle>/"
