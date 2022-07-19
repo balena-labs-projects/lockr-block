@@ -1,0 +1,10 @@
+npm:
+  platforms: []
+
+docker:
+  publish: false
+  builds:
+    - path: .
+      dockerfile: Dockerfile
+      docker_repo: balenablocks/lockr
+      publish: false
