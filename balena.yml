@@ -1,6 +1,6 @@
 name: lockr
 type: sw.block
-version: 1.0.0
+version: 1.0.1
 description: >-
   Apply application update locks by matching a URL response to a regular
   expression.
