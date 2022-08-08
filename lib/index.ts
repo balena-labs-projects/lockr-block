@@ -1,5 +1,5 @@
 import * as lockfile from 'lockfile';
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 import ms, { StringValue } from 'ms';
 
 const ENDPOINT: string = process.env.ENDPOINT || '';
@@ -9,11 +9,11 @@ const INTERVAL = process.env.INTERVAL || '60s'; // every 60s
 const LOCK_PATH =
 	process.env.BALENA_APP_LOCK_PATH || '/tmp/balena/updates.lock';
 
-function isUrl(input: any) {
-	let url;
+function isUrl(input: ConstructorParameters<typeof URL>[0]) {
+	let url: URL;
 	try {
 		url = new URL(input);
-	} catch (_) {
+	} catch {
 		return false;
 	}
 
@@ -24,7 +24,7 @@ if (!isUrl(ENDPOINT)) {
 	throw new Error('ENDPOINT must be a valid web URL!');
 }
 
-let lockRegexp: any;
+let lockRegexp: RegExp;
 try {
 	const match = LOCK_REGEXP?.match(new RegExp('^/(.*?)/([gimy]*)$'));
 	if (match != null) {
@@ -83,16 +83,16 @@ class HTTPResponseError extends Error {
 	}
 }
 
-const checkStatus = (response: any) => {
+const checkStatus = (response: Response) => {
 	if (response.ok) {
 		// response.status >= 200 && response.status < 300
 		return response;
 	} else {
-		return new HTTPResponseError(response);
+		throw new HTTPResponseError(response);
 	}
 };
 
-const doFetch = async (endpoint: string): Promise<any> => {
+const doFetch = async (endpoint: string): Promise<string> => {
 	console.log(`GET ${endpoint}`);
 
 	return fetch(endpoint, {
