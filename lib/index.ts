@@ -10,7 +10,7 @@ const checkLockAsync = promisify(lockfile.check);
 const ENDPOINT: string = process.env.ENDPOINT || '';
 const CREDENTIALS = process.env.CREDENTIALS;
 const LOCK_REGEXP = process.env.LOCK_REGEXP;
-const INTERVAL = process.env.INTERVAL || '60s'; // every 60s
+const INTERVAL_MS = ms((process.env.INTERVAL || '60s') as StringValue); // every 60s
 const LOCK_PATH =
 	process.env.BALENA_APP_LOCK_PATH || '/tmp/balena/updates.lock';
 
@@ -117,7 +117,7 @@ async function doLoop() {
 	} catch (err: any) {
 		console.error(err.message); // leave locks alone
 	} finally {
-		setTimeout(doLoop, ms(INTERVAL as StringValue));
+		setTimeout(doLoop, INTERVAL_MS);
 	}
 }
 
