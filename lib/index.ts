@@ -1,11 +1,16 @@
 import * as lockfile from 'lockfile';
 import fetch, { Response } from 'node-fetch';
 import ms, { StringValue } from 'ms';
+import { promisify } from 'util';
+
+const lockAsync = promisify(lockfile.lock);
+const unlockAsync = promisify(lockfile.unlock);
+const checkLockAsync = promisify(lockfile.check);
 
 const ENDPOINT: string = process.env.ENDPOINT || '';
 const CREDENTIALS = process.env.CREDENTIALS;
 const LOCK_REGEXP = process.env.LOCK_REGEXP;
-const INTERVAL = process.env.INTERVAL || '60s'; // every 60s
+const INTERVAL_MS = ms((process.env.INTERVAL || '60s') as StringValue); // every 60s
 const LOCK_PATH =
 	process.env.BALENA_APP_LOCK_PATH || '/tmp/balena/updates.lock';
 
@@ -35,43 +40,35 @@ try {
 }
 
 async function lock() {
-	return lockfile.check(LOCK_PATH, {}, async (err, isLocked) => {
-		if (err) {
-			return console.error(err.message);
-		}
+	try {
+		const isLocked = await checkLockAsync(LOCK_PATH);
 
 		if (!isLocked) {
 			console.log('applying lock...');
-			return lockfile.lock(LOCK_PATH, {}, async (e) => {
-				if (e) {
-					return console.error(e.message);
-				}
-				console.log('lock applied!');
-			});
+			await lockAsync(LOCK_PATH);
+			console.log('lock applied!');
 		} else {
-			return console.log('already locked!');
+			console.log('already locked!');
 		}
-	});
+	} catch (err: any) {
+		console.error(err.message);
+	}
 }
 
 async function unlock() {
-	return lockfile.check(LOCK_PATH, {}, async (err, isLocked) => {
-		if (err) {
-			return console.error(err.message);
-		}
+	try {
+		const isLocked = await checkLockAsync(LOCK_PATH);
 
 		if (isLocked) {
 			console.log('applying lock...');
-			return lockfile.unlock(LOCK_PATH, async (e) => {
-				if (e) {
-					return console.error(e.message);
-				}
-				console.log('lock removed!');
-			});
+			await unlockAsync(LOCK_PATH);
+			console.log('lock removed!');
 		} else {
 			console.log('already unlocked!');
 		}
-	});
+	} catch (err: any) {
+		console.error(err.message);
+	}
 }
 
 class HTTPResponseError extends Error {
@@ -95,7 +92,7 @@ const checkStatus = (response: Response) => {
 const doFetch = async (endpoint: string): Promise<string> => {
 	console.log(`GET ${endpoint}`);
 
-	return fetch(endpoint, {
+	const response = await fetch(endpoint, {
 		method: 'GET',
 		headers: {
 			...(CREDENTIALS != null && {
@@ -103,34 +100,26 @@ const doFetch = async (endpoint: string): Promise<string> => {
 					'Basic ' + Buffer.from(CREDENTIALS, 'utf-8').toString('base64'),
 			}),
 		},
-	}).then((response) => {
-		return checkStatus(response).text();
 	});
+	return checkStatus(response).text();
 };
 
 async function doLoop() {
-	return doFetch(ENDPOINT)
-		.then(async (response) => {
-			console.log(`=> ${response}`);
+	try {
+		const response = await doFetch(ENDPOINT);
+		console.log(`=> ${response}`);
 
-			if (lockRegexp.test(response)) {
-				return lock();
-			} else {
-				return unlock();
-			}
-		})
-		.catch((err) => {
-			console.error(err.message); // leave locks alone
-		})
-		.finally(() => {
-			setTimeout(doLoop, ms(INTERVAL as StringValue));
-		});
+		if (lockRegexp.test(response)) {
+			return await lock();
+		} else {
+			return await unlock();
+		}
+	} catch (err: any) {
+		console.error(err.message); // leave locks alone
+	} finally {
+		setTimeout(doLoop, INTERVAL_MS);
+	}
 }
 
-(async () => {
-	try {
-		return doLoop();
-	} catch (err) {
-		console.error(err);
-	}
-})();
+// doLoop handles all the errors internally so we don't need to worry about awaiting/catching errors
+doLoop();
