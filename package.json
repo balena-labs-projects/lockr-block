@@ -1,6 +1,6 @@
 {
   "name": "lockr",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Apply application update locks by matching a URL response to a regular expression",
   "homepage": "https://github.com/balena-labs-projects/lockr-block",
   "keywords": [
@@ -60,6 +60,6 @@
     "npm": "^8.5.5"
   },
   "versionist": {
-    "publishedAt": "2022-08-22T16:50:11.270Z"
+    "publishedAt": "2022-11-16T15:20:12.092Z"
   }
 }

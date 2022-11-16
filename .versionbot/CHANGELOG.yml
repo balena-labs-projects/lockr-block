@@ -1,0 +1,215 @@
+- commits:
+    - subject: moving from balenablocks to balena-labs-projects
+      hash: 0f0af20f42df87c47830ebd1f07390863899aa0c
+      body: ""
+      footer:
+        Signed-off-by: Flynn Joffray <flynn@balena.io>
+        signed-off-by: Flynn Joffray <flynn@balena.io>
+        Change-type: patch
+        change-type: patch
+      author: Flynn Joffray
+      nested: []
+  version: 1.0.3
+  title: ""
+  date: 2022-11-16T15:20:11.986Z
+- version: 1.0.2
+  date: 2022-08-22T16:56:16Z
+  commits:
+    - hash: e5da50f96f7789e5c838bf2274016cd75ad61265
+      author: Pagan Gazzard
+      footers:
+        change-type: patch
+      subject: Make use of async/await and wait for locks to be added/removed
+      body: null
+    - hash: 3aeac9d4de625abd482e5e61a6d9c5bc9d9ff5ae
+      author: Pagan Gazzard
+      footers:
+        change-type: patch
+      subject: Only convert the interval string into ms once
+      body: null
+- version: 1.0.1
+- date: 2022-08-08T18:05:21Z
+- commits:
+    - hash: 9ac6242732adeba7e6b47a7ab4957f25f586edc5
+- commits:
+    - author: Pagan Gazzard
+- commits:
+    - footers:
+        change-type: patch
+- commits:
+    - subject: Correctly handle receiving a non-2xx response
+- commits:
+    - body: |-
+        This now logs the response error rather than trying to call `.text` on
+        it and receiving a `checkStatus(...).text is not a function` error
+- version: 1.0.0
+- date: 2022-07-19T20:09:39Z
+- commits:
+    - hash: ac852f2cb18c2ffd2173c289c9db01ceddcefe5e
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        change-type: patch
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Change the merge branch from main to master
+- commits:
+    - body: null
+- commits:
+    - hash: 64cd8f9c83ebe1f3765af40b0b9e3f005cfceab4
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        change-type: patch
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Add deploy-to-balena github action workflow
+- commits:
+    - body: null
+- commits:
+    - hash: 5d5e8469f6105bc54934ceaba1ca7c97214257ad
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Add repo.yml and provide repo type
+- commits:
+    - body: null
+- commits:
+    - hash: 9748a8aa1ae3c84ff9375d43d1d9f5cf996438a0
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Remove old docker-compose test file
+- commits:
+    - body: null
+- commits:
+    - hash: 4ae0a10ebbf02768fccb5409a454c34efc43f3ef
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Update readme
+- commits:
+    - body: null
+- commits:
+    - hash: 80420d662b5989d0aa53005f73e53af2dc0dbc34
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Add balena.yml
+- commits:
+    - body: null
+- commits:
+    - hash: f3cc33258f5c2ed22dce2fc1b51d9a1e59b46e02
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        change-type: patch
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Switch from proper-lockfile to lockfile module
+- commits:
+    - body: |-
+        The proper-lockfile package used directories for locks
+        which was not supported by balena-supervisor until recently.
+- commits:
+    - hash: 84edbd2d9abb7032387a23643a04421a811e4ded
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        change-type: major
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Switch to typescript and nodejs 16
+- commits:
+    - body: null
+- commits:
+    - hash: 6371f2d0457af5a29f475c9cd4229f466aca28d7
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        change-type: major
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Complete switch to typescript and remove ms module
+- commits:
+    - body: null
+- commits:
+    - hash: bb916ed05d4c6b38a69376817987f63066beb328
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        change-type: major
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Replace lock check interval with node-cron
+- commits:
+    - body: null
+- commits:
+    - hash: d9e0c8a0fa40d9051cbe5463ca03607a67ab2744
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        change-type: major
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Use node-fetch to get external URL and match response
+- commits:
+    - body: null
+- commits:
+    - hash: e395d05450c3c0bfc1c17838976b43c9575ff9d7
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        change-type: patch
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Switch back to timers to allow shorter intervals than cron
+- commits:
+    - body: null
+- commits:
+    - hash: bc059d294a1c5b00b679b231411a7682393fab6e
+- commits:
+    - author: Kyle Harding
+- commits:
+    - footers:
+        signed-off-by: Kyle Harding <kyle@balena.io>
+- commits:
+    - subject: Update readme
+- commits:
+    - body: null
