@@ -8,7 +8,7 @@ assets:
   repository:
     type: blob.asset
     data:
-      url: 'https://github.com/balenablocks/lockr-block'
+      url: 'https://github.com/balena-labs-projects/lockr-block'
 data:
   defaultDeviceType: intel-nuc
   supportedDeviceTypes:
