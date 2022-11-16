@@ -13,7 +13,7 @@ services:
   ...
   lockr:
     # where <arch> is one of aarch64, armv7hf or amd64
-    image: bh.cr/balenablocks/lockr-<arch>
+    image: bh.cr/balenalabs/lockr-<arch>
 ```
 
 To pin to a specific version of this block use:
@@ -23,7 +23,7 @@ services:
   ...
   lockr:
     # where <version> is the release semver or release commit ID
-    image: bh.cr/balenablocks/lockr-<arch>/<version>
+    image: bh.cr/balenalabs/lockr-<arch>/<version>
 ```
 
 Here's an example to check if a jenkins server is busy by querying the API:
@@ -31,7 +31,7 @@ Here's an example to check if a jenkins server is busy by querying the API:
 ```yml
 services:
   lockr:
-    image: bh.cr/balenablocks/lockr-amd64
+    image: bh.cr/balenalabs/lockr-amd64
     environment:
       ENDPOINT: "https://jenkins.product-os.io/computer/api/xml?xpath=//busyExecutors"
       LOCK_REGEXP: "/<busyExecutors>0</busyExecutors>/"
@@ -44,7 +44,7 @@ Here's an example to check if a jenkins node is busy by querying the API:
 ```yml
 services:
   lockr:
-    image: bh.cr/balenablocks/lockr-amd64
+    image: bh.cr/balenalabs/lockr-amd64
     environment:
       ENDPOINT: "https://jenkins.product-os.io/computer/foobar/api/xml?xpath=//idle"
       LOCK_REGEXP: "/<idle>false</idle>/"
